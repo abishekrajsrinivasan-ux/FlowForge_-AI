@@ -1,0 +1,21 @@
+date,shift,line_id,machine_id,product_id,target_quantity,actual_quantity,planned_time,operating_time,downtime,planned_downtime,unplanned_downtime,changeover_time,idle_time,ideal_cycle_time,actual_cycle_time,total_units,good_units,defective_units,rework,downtime_reason
+2026-03-01,Shift 1,Line-A,Press-101,Part-X1,500,460,480,420,60,15,45,0,0,45,49,460,452,8,2,Hydraulic Pressure Drop
+2026-03-01,Shift 1,Line-A,Weld-Robot-1,Part-X1,500,455,480,430,50,15,35,0,0,48,51,455,448,7,3,Weld Tip Spatter Cleaning
+2026-03-01,Shift 1,Line-A,Paint-Booth-1,Part-X1,500,440,480,390,90,30,60,0,0,46,50,440,430,10,4,Nozzle Clog & Flush
+2026-03-01,Shift 1,Line-A,Assembly-Stn-1,Part-X1,500,435,480,410,70,15,55,0,0,50,54,435,429,6,1,Fastener Feeder Jam
+2026-03-01,Shift 1,Line-A,QC-Inspection,Part-X1,500,428,480,440,40,10,30,0,0,52,56,428,425,3,0,Optical Sensor Misalignment
+2026-03-01,Shift 2,Line-A,Press-101,Part-X2,480,430,480,400,80,20,60,20,0,45,50,430,420,10,2,Die Change & Alignment
+2026-03-01,Shift 2,Line-A,Weld-Robot-1,Part-X2,480,425,480,415,65,20,45,15,0,48,53,425,417,8,4,Fixture Clamping Error
+2026-03-01,Shift 2,Line-A,Paint-Booth-1,Part-X2,480,395,480,360,120,30,90,0,0,46,52,395,382,13,5,Exhaust Fan Vibration
+2026-03-01,Shift 2,Line-A,Assembly-Stn-1,Part-X2,480,410,480,395,85,20,65,10,0,50,55,410,402,8,2,Material Bin Shortage
+2026-03-01,Shift 2,Line-A,QC-Inspection,Part-X2,480,400,480,420,60,15,45,0,0,52,57,400,396,4,1,Calibration Check
+2026-03-02,Shift 1,Line-A,Press-101,Part-X1,500,470,480,435,45,15,30,0,0,45,48,470,464,6,1,Minor Stoppage
+2026-03-02,Shift 1,Line-A,Weld-Robot-1,Part-X1,500,462,480,440,40,15,25,0,0,48,50,462,456,6,2,Wire Feed Resistance
+2026-03-02,Shift 1,Line-A,Paint-Booth-1,Part-X1,500,415,480,375,105,30,75,0,0,46,51,415,404,11,4,Atomizer Pressure Fluctuation
+2026-03-02,Shift 1,Line-A,Assembly-Stn-1,Part-X1,500,445,480,425,55,15,40,0,0,50,53,445,440,5,1,Pneumatic Torque Driver Calibration
+2026-03-02,Shift 1,Line-A,QC-Inspection,Part-X1,500,438,480,445,35,10,25,0,0,52,55,438,435,3,0,Label Printer Ribbon Reset
+2026-03-02,Shift 2,Line-A,Press-101,Part-X2,480,445,480,410,70,20,50,15,0,45,49,445,436,9,2,Hydraulic Temperature High
+2026-03-02,Shift 2,Line-A,Weld-Robot-1,Part-X2,480,438,480,425,55,20,35,10,0,48,52,438,431,7,3,Coolant Flow Low
+2026-03-02,Shift 2,Line-A,Paint-Booth-1,Part-X2,480,390,480,350,130,30,100,0,0,46,53,390,376,14,6,Paint Viscosity Out of Spec
+2026-03-02,Shift 2,Line-A,Assembly-Stn-1,Part-X2,480,420,480,405,75,20,55,10,0,50,54,420,413,7,2,Harness Routing Delay
+2026-03-02,Shift 2,Line-A,QC-Inspection,Part-X2,480,412,480,430,50,15,35,0,0,52,56,412,408,4,1,Barcode Scanner Sync

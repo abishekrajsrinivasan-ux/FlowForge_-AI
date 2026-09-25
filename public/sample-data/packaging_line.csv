@@ -1,0 +1,11 @@
+timestamp,machine,production_line,work_shift,item_sku,target_units,units_produced,planned_minutes,actual_runtime,down_minutes,setup_time,ideal_cycle_sec,actual_cycle_sec,good_units,scrap_units,stoppage_reason
+2026-03-05 06:00:00,Filler-01,PackLine-1,Morning,Beverage-500ml,3600,3240,480,410,70,25,6.5,7.1,3200,40,Valve Gasket Wear
+2026-03-05 06:00:00,Capper-01,PackLine-1,Morning,Beverage-500ml,3600,3210,480,430,50,15,6.5,6.9,3180,30,Cap Hopper Chute Jam
+2026-03-05 06:00:00,Labeler-01,PackLine-1,Morning,Beverage-500ml,3600,3120,480,380,100,35,6.5,7.3,3070,50,Adhesive Temperature Warning
+2026-03-05 06:00:00,CasePacker-01,PackLine-1,Morning,Beverage-500ml,3600,3080,480,420,60,20,6.5,7.0,3055,25,Carton Magazine Feed Fault
+2026-03-05 06:00:00,Palletizer-01,PackLine-1,Morning,Beverage-500ml,3600,3050,480,445,35,10,6.5,6.8,3045,5,Stretch Film Roll Reload
+2026-03-05 14:00:00,Filler-01,PackLine-1,Evening,Beverage-750ml,3200,2900,480,400,80,30,7.5,8.1,2865,35,CIP Sanitization Overrun
+2026-03-05 14:00:00,Capper-01,PackLine-1,Evening,Beverage-750ml,3200,2880,480,425,55,20,7.5,7.9,2850,30,Torque Head Slip
+2026-03-05 14:00:00,Labeler-01,PackLine-1,Evening,Beverage-750ml,3200,2710,480,365,115,40,7.5,8.4,2640,70,Label Web Break & Splice
+2026-03-05 14:00:00,CasePacker-01,PackLine-1,Evening,Beverage-750ml,3200,2680,480,410,70,25,7.5,8.0,2660,20,Glue Gun Tip Clogging
+2026-03-05 14:00:00,Palletizer-01,PackLine-1,Evening,Beverage-750ml,3200,2650,480,440,40,15,7.5,7.7,2645,5,Pallet Dispenser Jam
