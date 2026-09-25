@@ -269,12 +269,12 @@ export const BottleneckIntelligence: React.FC = () => {
 
       {/* PREDICTIVE TREND */}
       <div className="p-5 rounded-xl border border-slate-200 bg-white shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-1">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-blue-500" />
-            <h3 className="text-sm font-semibold text-slate-700">Predictive Bottleneck Trend & Emergence Probability</h3>
+            <h3 className="text-sm font-semibold text-slate-700">Predictive Bottleneck Detection</h3>
           </div>
-          <span className="text-xs text-slate-400 font-mono">Linear regression on downtime time series</span>
+          <span className="text-xs text-slate-500 font-mono">Identifies emerging bottlenecks before they become major production constraints</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

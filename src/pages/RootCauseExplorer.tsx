@@ -71,7 +71,7 @@ const ConfidenceBar: React.FC<{ value: number }> = ({ value }) => (
 
 // ─── Factor card ──────────────────────────────────────────────────────────────
 const FactorCard: React.FC<{ rc: RootCauseFactor; maxContrib: number }> = ({ rc, maxContrib }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const cls = FACTOR_COLORS[rc.factor] || 'bg-slate-100 text-slate-600 border-slate-200';
   const icon = FACTOR_ICONS[rc.factor] || <Activity className="w-3 h-3" />;
 
@@ -129,17 +129,20 @@ const FactorCard: React.FC<{ rc: RootCauseFactor; maxContrib: number }> = ({ rc,
         </div>
       </div>
 
-      {/* Evidence toggle */}
+      {/* Brief Description & Evidence toggle */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-2 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-500 hover:bg-slate-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-600 hover:bg-slate-100 transition-colors font-medium"
       >
-        <span className="font-mono">{open ? 'Hide' : 'View'} Evidence</span>
-        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        <span className="font-mono flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          {open ? 'Hide' : 'View'} Brief Description &amp; Data Evidence
+        </span>
+        {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>
       {open && (
-        <div className="px-4 py-3 bg-amber-50 border-t border-amber-100">
-          <p className="text-xs text-slate-700 leading-relaxed">{rc.evidence}</p>
+        <div className="px-4 py-3 bg-blue-50/60 border-t border-blue-100">
+          <p className="text-xs text-slate-700 leading-relaxed font-sans">{rc.evidence}</p>
         </div>
       )}
     </div>
@@ -278,8 +281,8 @@ export const RootCauseExplorer: React.FC = () => {
           Evidence-Based Root-Cause Explorer
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          All findings are computed directly from your dataset records — no synthetic values.
-          Showing only factors with statistically notable deviation from the dataset average.
+          Uses machine data and patterns to identify the actual cause of production losses.
+          All findings are computed directly from your dataset records — showing only factors with statistically notable deviation.
         </p>
       </div>
 
@@ -448,6 +451,30 @@ export const RootCauseExplorer: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Brief Data-Driven Description */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Search className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Data-Driven Root Cause Brief — {selectedMachine.machineId}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed font-sans">
+                    According to the <strong>{selectedMachine.totalRecords} evaluated records</strong> in your uploaded dataset, 
+                    <strong> {selectedMachine.machineId}</strong> incurred <strong>{selectedMachine.totalDowntime} minutes of total downtime</strong> 
+                    (accounting for <strong>{selectedMachine.downtimeShare.toFixed(1)}%</strong> of all plant downtime).
+                    {selectedMachine.topDowntimeReason && (
+                      <> The single largest contributing failure mode was <strong>"{selectedMachine.topDowntimeReason}"</strong>, consuming <strong>{selectedMachine.topDowntimeReasonMinutes} minutes</strong> across {selectedMachine.downtimeReasonCount} stoppage event(s).</>
+                    )}
+                    {selectedMachine.throughputGapUnits > 0 && (
+                      <> The station delivered <strong>{selectedMachine.totalActual.toFixed(0)} units</strong> vs a scheduled quota of {selectedMachine.totalTarget.toFixed(0)} units (a shortfall of <strong>{selectedMachine.throughputGapUnits.toFixed(0)} units</strong> or {selectedMachine.throughputGapPct.toFixed(1)}%).</>
+                    )}
+                    {selectedMachine.defectRate !== null && selectedMachine.defectRate > 0 && (
+                      <> Defect rate logged at <strong>{selectedMachine.defectRate.toFixed(2)}%</strong> ({selectedMachine.totalDefects} scrap units).</>
+                    )}
+                  </p>
+                </div>
 
                 {/* Factor cards */}
                 <div>

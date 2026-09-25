@@ -53,7 +53,7 @@ export const TargetRisk: React.FC = () => {
           Production Target Risk & Trajectory Forecaster
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Predictive velocity monitoring comparing current output velocity against the required pacing to satisfy scheduled quotas.
+          Predicts whether the production target is likely to be achieved before the shift ends by evaluating real-time output velocity against required pacing.
         </p>
       </div>
 

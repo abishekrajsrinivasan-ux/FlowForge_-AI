@@ -130,7 +130,7 @@ export const WhatIfSimulator: React.FC = () => {
             What-If Production Optimization &amp; Risk Simulator
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Dynamic engineering sandbox adjusting operational intervention levers with real-time target risk forecasting.
+            Tests improvement scenarios and predicts their impact before implementation with real-time target risk forecasting.
           </p>
         </div>
 
