@@ -257,19 +257,16 @@ export const ProductionDataProvider: React.FC<{ children: React.ReactNode }> = (
     if (!productionRecords.length) return [];
 
     return productionRecords.filter((record) => {
-      // Role-based machine/line scoping for Operator
-      if (user?.role === 'Operator') {
-        if (user.assignedMachine && record.machine_id !== user.assignedMachine) {
+      // 1. Machine filtering:
+      if (filters.machineId !== 'ALL' && filters.machineId) {
+        if (record.machine_id !== filters.machineId) {
           return false;
         }
-        if (user.assignedLine && record.line_id !== user.assignedLine) {
-          return false;
-        }
-      } else {
-        if (filters.machineId !== 'ALL' && record.machine_id !== filters.machineId) {
-          return false;
-        }
-        if (filters.lineId !== 'ALL' && record.line_id !== filters.lineId) {
+      }
+
+      // 2. Line filtering:
+      if (filters.lineId !== 'ALL' && filters.lineId) {
+        if (record.line_id !== filters.lineId) {
           return false;
         }
       }
@@ -306,18 +303,18 @@ export const ProductionDataProvider: React.FC<{ children: React.ReactNode }> = (
     return generateRecommendations(activeDatasetId, filteredRecords, bottleneckResult.scores, losses);
   }, [activeDatasetId, filteredRecords, bottleneckResult.scores, losses]);
 
-  // Save new uploaded dataset
+  // Save new uploaded dataset (available to both Admin and Operator)
   const saveNewDataset = async (dataset: Dataset, records: ProductionRecord[], columns: unknown[]) => {
-    if (user && user.role !== 'Admin') {
-      throw new Error('Access Denied: Only Admin users can upload new datasets.');
-    }
     const supabase = getSupabase();
 
     // 1. Immediately store into high-speed memory cache so calculation engines evaluate authentic data in 0ms
     datasetRecordsCache.set(dataset.id, records);
 
     // 2. Persist to IndexedDB (handles hundreds of thousands of records without localStorage quota crashes)
-    await saveRecordsToIndexedDB(dataset.id, records);
+    //    This is async and non-blocking — we fire and continue
+    saveRecordsToIndexedDB(dataset.id, records).catch((e) =>
+      console.warn('IndexedDB write failed (data still in memory):', e)
+    );
 
     // 3. Immediately update in-memory state so UI updates instantly with authentic data
     const updatedDatasets = [dataset, ...datasets.filter((d) => d.id !== dataset.id)];
@@ -326,15 +323,15 @@ export const ProductionDataProvider: React.FC<{ children: React.ReactNode }> = (
     setProductionRecords(records);
     resetFilters();
 
-    // 4. Safe localStorage metadata sync
+    // 4. Safe localStorage metadata-only sync (ONLY metadata — not records, which are in IndexedDB)
+    //    Writing full records to localStorage blocks the main thread for large CSVs (5-10 seconds!)
     try {
       localStorage.setItem('ff_datasets', JSON.stringify(updatedDatasets));
-      localStorage.setItem(`ff_records_${dataset.id}`, JSON.stringify(records));
     } catch (storageErr) {
       console.warn('Local storage write notice (dataset held safely in memory & IndexedDB):', storageErr);
     }
 
-    // 5. Background sync to Supabase (non-blocking)
+    // 5. Background sync to Supabase (non-blocking — does not delay UI)
     if (supabase) {
       (async () => {
         try {
@@ -353,7 +350,8 @@ export const ProductionDataProvider: React.FC<{ children: React.ReactNode }> = (
             if (columnsError) throw columnsError;
           }
 
-          const chunkSize = 500;
+          // Larger batches = fewer round-trips = faster background sync
+          const chunkSize = 1000;
           const recordBatches = [];
           for (let i = 0; i < records.length; i += chunkSize) {
             recordBatches.push(records.slice(i, i + chunkSize));

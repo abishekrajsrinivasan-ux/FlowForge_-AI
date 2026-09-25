@@ -140,12 +140,14 @@ export const App: React.FC = () => {
                   </AdminRoute>
                 }
               />
+              {/* Data Management: Both Admin & Operator can upload datasets */}
+              {/* Role-aware UI inside the page hides admin-only actions from Operators */}
               <Route
                 path="/data-management"
                 element={
-                  <AdminRoute>
+                  <ProtectedRoute>
                     <DataManagement />
-                  </AdminRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route

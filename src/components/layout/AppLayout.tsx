@@ -26,6 +26,7 @@ import {
 import { useProductionData } from '../../context/ProductionDataContext';
 import { useAuth } from '../../context/AuthContext';
 import { AiChatbot } from '../chat/AiChatbot';
+import { DatasetLoadingScreen } from '../common/DatasetLoadingScreen';
 
 // Full Admin Navigation
 const ADMIN_NAV_ITEMS = [
@@ -43,11 +44,14 @@ const ADMIN_NAV_ITEMS = [
   { label: 'Settings', path: '/settings', icon: Settings },
 ];
 
-// Production Monitoring Navigation for Operators (Restricted to monitoring features only)
+// Production Monitoring Navigation for Operators
+// Operators can: view overview/OEE/risk-radar + upload/switch datasets
+// Admin changes (uploaded datasets, active dataset) are synced automatically via shared context
 const OPERATOR_NAV_ITEMS = [
   { label: 'Overview', path: '/', icon: LayoutDashboard },
   { label: 'OEE & Production', path: '/oee', icon: Gauge },
   { label: 'Production Risk Radar', path: '/risk-radar', icon: Radar },
+  { label: 'Data Upload', path: '/data-management', icon: Upload },
 ];
 
 export const AppLayout: React.FC = () => {
@@ -72,7 +76,9 @@ export const AppLayout: React.FC = () => {
     filters,
     setFilters,
     resetFilters,
+    isAnalyzing,
     setIsAnalyzing,
+    loadingDatasetName,
     setLoadingDatasetName,
   } = useProductionData();
 
@@ -257,7 +263,6 @@ export const AppLayout: React.FC = () => {
               <select
                 aria-label="Active Dataset"
                 value={activeDatasetId || ''}
-                disabled={isOperator}
                 onChange={(e) => {
                   const newId = e.target.value || null;
                   const targetDs = datasets.find((d) => d.id === newId);
@@ -267,7 +272,7 @@ export const AppLayout: React.FC = () => {
                   }
                   setActiveDatasetId(newId);
                 }}
-                className="bg-white border border-slate-300 text-slate-700 text-xs rounded-md px-2.5 py-1 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 max-w-[200px] truncate disabled:bg-slate-100 disabled:text-slate-500"
+                className="bg-white border border-slate-300 text-slate-700 text-xs rounded-md px-2.5 py-1 font-medium focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200 max-w-[200px] truncate"
               >
                 {datasets.length === 0 ? (
                   <option value="">No dataset uploaded</option>
@@ -290,36 +295,40 @@ export const AppLayout: React.FC = () => {
 
           {/* Dynamic Global Filters / Operator Equipment Scoping */}
           <div className="flex items-center gap-2 overflow-x-auto py-1">
-            {isOperator ? (
-              // Operator Machine/Line Lock Badge
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md text-xs font-mono font-medium shadow-sm">
-                  <Cpu className="w-3.5 h-3.5 text-emerald-600" />
-                  Assigned Machine: <strong className="text-emerald-950 font-bold">{user?.assignedMachine || 'Press-101'}</strong>
+            {/* Machine / Station Selector (Available to both Operator and Admin) */}
+            {uniqueMachines.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border shadow-sm ${
+                    isOperator
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-slate-50 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <Cpu className={`w-3.5 h-3.5 ${isOperator ? 'text-emerald-600' : 'text-blue-600'}`} />
+                  <span>{isOperator ? 'Station:' : 'Machine:'}</span>
                 </span>
-                {user?.assignedLine && (
-                  <span className="inline-flex items-center px-2 py-1 bg-slate-100 border border-slate-200 text-slate-700 rounded-md text-xs font-mono">
-                    Line: <strong>{user.assignedLine}</strong>
-                  </span>
-                )}
-              </div>
-            ) : (
-              // Admin Machine Filter
-              uniqueMachines.length > 0 && (
                 <select
-                  aria-label="Filter by Machine"
+                  aria-label="Filter by Machine / Station"
                   value={filters.machineId}
                   onChange={(e) => setFilters({ machineId: e.target.value })}
-                  className="bg-white border border-slate-300 text-slate-600 text-xs rounded px-2 py-1 focus:outline-none focus:border-blue-500"
+                  className={`bg-white border text-xs rounded px-2.5 py-1 font-medium focus:outline-none shadow-sm ${
+                    isOperator
+                      ? 'border-emerald-300 text-emerald-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200'
+                      : 'border-slate-300 text-slate-700 focus:border-blue-500'
+                  }`}
                 >
-                  <option value="ALL">All Machines ({uniqueMachines.length})</option>
+                  <option value="ALL">
+                    {isOperator ? `All Stations (${uniqueMachines.length})` : `All Machines (${uniqueMachines.length})`}
+                  </option>
                   {uniqueMachines.map((m) => (
                     <option key={m} value={m}>
                       {m}
+                      {isOperator && user?.assignedMachine === m ? ' ★ (Your Station)' : ''}
                     </option>
                   ))}
                 </select>
-              )
+              </div>
             )}
 
             {/* Shift Filter */}
@@ -560,7 +569,16 @@ export const AppLayout: React.FC = () => {
 
         {/* PAGE CONTENT ROUTER OUTLET */}
         <main className="flex-1 overflow-y-auto p-6 bg-slate-50 relative">
-          <Outlet />
+          {isAnalyzing ? (
+            <DatasetLoadingScreen
+              datasetName={loadingDatasetName || activeDataset?.name || 'Production Telemetry'}
+              rowCount={activeDataset?.row_count}
+              autoProgress={true}
+              onFinish={() => setIsAnalyzing(false)}
+            />
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
 

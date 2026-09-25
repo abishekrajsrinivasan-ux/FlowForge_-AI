@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types/database';
+import { GoogleAccountModal } from '../components/common/GoogleAccountModal';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [showGmailDirect, setShowGmailDirect] = useState(false);
   const [gmailInput, setGmailInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -145,22 +147,40 @@ export const LoginPage: React.FC = () => {
     navigate(from, { replace: true });
   };
 
-  const handleGoogleSignIn = async () => {
+  // When user clicks Continue with Google, open the Google Account login modal
+  const handleGoogleSignIn = () => {
+    setErrorMessage(null);
+    setIsGoogleModalOpen(true);
+  };
+
+  // Called when user selects or authenticates an account in the Google modal
+  const handleGoogleAccountSelected = (selectedEmail: string, accountName: string) => {
+    setIsGoogleModalOpen(false);
+    signInWithGoogleDirect(
+      selectedEmail,
+      accountName,
+      selectedRole,
+      selectedRole === 'Operator' ? assignedMachine : undefined,
+      selectedRole === 'Operator' ? assignedLine : undefined
+    );
+    navigate(from, { replace: true });
+  };
+
+  // Optional: direct redirect to Supabase OAuth provider
+  const handleLiveOAuthRedirect = async () => {
     setErrorMessage(null);
     setGoogleLoading(true);
     try {
       const { error } = await signInWithGoogle();
       if (error) {
         setErrorMessage(
-          `${error.message}. You can also sign in directly with your Gmail ID below.`
+          `${error.message}. Please select your Google account directly from the list.`
         );
-        setShowGmailDirect(true);
       }
     } catch (err: any) {
       setErrorMessage(
-        `${err.message || 'Google Sign-In failed'}. You can also sign in directly with your Gmail ID below.`
+        `${err.message || 'Google Sign-In failed'}. Please select your Google account directly.`
       );
-      setShowGmailDirect(true);
     } finally {
       setGoogleLoading(false);
     }
@@ -376,17 +396,9 @@ export const LoginPage: React.FC = () => {
               type="button"
               id="google-signin-btn"
               onClick={handleGoogleSignIn}
-              disabled={googleLoading || !isSupabaseConfigured}
-              title={
-                !isSupabaseConfigured
-                  ? 'Configure Supabase in Settings first to enable Google OAuth Sign-In'
-                  : 'Sign in with your registered Google account'
-              }
-              className={`w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border text-sm font-semibold transition-all ${
-                isSupabaseConfigured
-                  ? 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700 shadow-sm hover:shadow-md active:scale-[0.98]'
-                  : 'bg-slate-800/50 border-slate-700 text-slate-500 cursor-not-allowed opacity-60'
-              }`}
+              disabled={googleLoading}
+              title="Sign in with your Google account (opens Google Account selector)"
+              className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm shadow-sm hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
             >
               {/* Google SVG Logo */}
               <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" aria-hidden="true">
@@ -410,13 +422,11 @@ export const LoginPage: React.FC = () => {
               {googleLoading ? (
                 <span className="flex items-center gap-2 text-slate-600">
                   <span className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-                  Redirecting to Google...
+                  Connecting to Google...
                 </span>
               ) : (
-                <span>
-                  {isSupabaseConfigured
-                    ? `Continue with Google (${selectedRole})`
-                    : 'Google Sign-In (Configure Supabase First)'}
+                <span className="flex items-center gap-1.5">
+                  Continue with Google <span className="text-slate-400 font-normal">({selectedRole})</span>
                 </span>
               )}
             </button>
@@ -616,6 +626,16 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* GOOGLE ACCOUNT CHOOSER / AUTHENTIC LOGIN MODAL */}
+      <GoogleAccountModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleGoogleAccountSelected}
+        onLiveOAuthRedirect={handleLiveOAuthRedirect}
+        isSupabaseConfigured={isSupabaseConfigured}
+        selectedRole={selectedRole}
+      />
     </div>
   );
 };

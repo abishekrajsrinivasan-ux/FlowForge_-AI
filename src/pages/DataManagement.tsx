@@ -28,6 +28,7 @@ export const DataManagement: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+  const isOperator = user?.role === 'Operator';
 
   const {
     datasets,
@@ -189,13 +190,13 @@ export const DataManagement: React.FC = () => {
     }, 0);
   };
 
-  // Commit valid records — fast path: localStorage first, Supabase in background
+  // Commit valid records — instant: memory-first, IndexedDB & Supabase run in background
   const commitDataset = async () => {
     if (!validationResult || !currentFile) return;
 
     setStep('processing');
-    setProcessingProgress(20);
-    setProcessingStepText('Normalizing records...');
+    setProcessingProgress(30);
+    setProcessingStepText('Normalizing and indexing records...');
 
     const datasetId = crypto.randomUUID ? crypto.randomUUID() : `ds_${Date.now()}`;
 
@@ -231,27 +232,26 @@ export const DataManagement: React.FC = () => {
       sample_values: m.sampleValues,
     }));
 
-    setProcessingProgress(50);
+    setProcessingProgress(70);
     setProcessingStepText('Applying dataset to dashboard...');
 
-    // Apply to context immediately (triggers recalculation & stores in memory + IndexedDB)
+    // saveNewDataset is now non-blocking — memory + IndexedDB + Supabase all run in background
+    // This call returns almost instantly since IndexedDB write is fire-and-forget
     await saveNewDataset(newDataset, recordsWithId, columnRecords);
 
-    // Trigger dedicated telemetry analyzing loading screen
+    setProcessingProgress(100);
+    setProcessingStepText('Complete!');
+
+    // Close modal immediately and show the dedicated full-screen analytics loading screen
+    setIsModalOpen(false);
     setIsAnalyzing(true);
     setLoadingDatasetName(newDataset.name);
+    navigate(isOperator ? '/oee' : '/');
 
-    setProcessingProgress(100);
-    setProcessingStepText('Ready! Redirecting...');
-
-    // Close modal and navigate immediately
-    setIsModalOpen(false);
-    navigate('/');
-
-    // ── BACKGROUND: fire Supabase Storage upload non-blocking (don't await)
+    // Background: fire Supabase Storage upload (optional, non-blocking)
     if (currentFile) {
       uploadDatasetFile(currentFile, datasetId, user?.id).catch(() => {
-        // silent — Storage upload is optional, data is already in Postgres/local
+        // silent — Storage upload is optional
       });
     }
   };
@@ -263,10 +263,12 @@ export const DataManagement: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
             <Database className="w-5 h-5 text-blue-600" />
-            Dataset Management & Storage
+            {isOperator ? 'Upload Production Dataset' : 'Dataset Management & Storage'}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Ingest, normalize, validate, and store real production data into Supabase PostgreSQL.
+            {isOperator
+              ? 'Upload your production CSV to analyze OEE, bottlenecks, and risk for your assigned machine/line.'
+              : 'Ingest, normalize, validate, and store real production data into Supabase PostgreSQL.'}
           </p>
         </div>
 
@@ -278,6 +280,17 @@ export const DataManagement: React.FC = () => {
           Upload Production Dataset
         </button>
       </div>
+
+      {/* Operator info banner — shows that admin-uploaded datasets are also available */}
+      {isOperator && datasets.length > 0 && (
+        <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 flex items-start gap-3 text-xs text-blue-800">
+          <Layers className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+          <div>
+            <strong>Shared Datasets Available:</strong> Your admin has uploaded {datasets.length} dataset{datasets.length > 1 ? 's' : ''} that you can activate below.
+            You can also upload your own production CSV. The active dataset drives all your dashboard metrics.
+          </div>
+        </div>
+      )}
 
       {/* DATASETS LIST TABLE */}
       <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm space-y-4">
@@ -376,13 +389,16 @@ export const DataManagement: React.FC = () => {
                               Set Active
                             </button>
                           )}
-                          <button
-                            onClick={() => deleteDataset(d.id)}
-                            className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-all"
-                            title="Delete dataset"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {/* Only Admin can delete datasets */}
+                          {!isOperator && (
+                            <button
+                              onClick={() => deleteDataset(d.id)}
+                              className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-all"
+                              title="Delete dataset"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
