@@ -461,8 +461,8 @@ export const RootCauseExplorer: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-xs text-slate-700 leading-relaxed font-sans">
-                    According to the <strong>{selectedMachine.totalRecords} evaluated records</strong> in your uploaded dataset, 
-                    <strong> {selectedMachine.machineId}</strong> incurred <strong>{selectedMachine.totalDowntime} minutes of total downtime</strong> 
+                    According to the <strong>{selectedMachine.totalRecords} evaluated records</strong> in your uploaded dataset,
+                    <strong> {selectedMachine.machineId}</strong> incurred <strong>{selectedMachine.totalDowntime} minutes of total downtime</strong>
                     (accounting for <strong>{selectedMachine.downtimeShare.toFixed(1)}%</strong> of all plant downtime).
                     {selectedMachine.topDowntimeReason && (
                       <> The single largest contributing failure mode was <strong>"{selectedMachine.topDowntimeReason}"</strong>, consuming <strong>{selectedMachine.topDowntimeReasonMinutes} minutes</strong> across {selectedMachine.downtimeReasonCount} stoppage event(s).</>
